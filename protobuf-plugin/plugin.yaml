@@ -1,0 +1,13 @@
+tasks:
+  generateProto:
+    action: !generateProto
+      protoDir: ${module.rootDir}/src/proto
+      javaOutputDir: ${taskOutputDir}/proto/java
+      kotlinOutputDir: ${taskOutputDir}/proto/kotlin
+      plugin: ${pluginSettings.plugin}
+      protobufVersion: ${pluginSettings.protobufVersion}
+    markOutputsAs:
+      - path: ${action.javaOutputDir}
+        kind: java-sources
+      - path: ${action.kotlinOutputDir}
+        kind: kotlin-sources

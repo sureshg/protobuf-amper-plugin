@@ -1,0 +1,28 @@
+product: jvm/app
+
+settings:
+  jvm:
+    mainClass: MainKt
+
+plugins:
+  protobuf-plugin:
+    enabled: true
+    protobufVersion: V4
+    plugin: GRPC_KOTLIN
+
+# Runtime dependencies required by the generated code.
+# Which deps you need depends on the plugin mode:
+#
+#   JAVA        → protobuf-java
+#   KOTLIN      → protobuf-java, protobuf-kotlin
+#   GRPC_JAVA   → protobuf-java, grpc-protobuf, grpc-stub
+#   GRPC_KOTLIN → all of the above + grpc-kotlin-stub
+#
+# For running a gRPC server/client, also add a transport:
+#   io.grpc:grpc-netty-shaded or io.grpc:grpc-okhttp
+dependencies:
+  - $libs.protobuf.java
+  - $libs.protobuf.kotlin
+  - $libs.grpc.protobuf
+  - $libs.grpc.stub
+  - $libs.grpc.kotlin.stub

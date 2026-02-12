@@ -1,0 +1,22 @@
+[versions]
+protobuf4j  = "0.0.1"
+protobuf    = "4.33.5"
+grpc        = "1.79.0"
+grpc-kotlin = "1.5.0"
+
+[libraries]
+# protobuf4j: protoc compiled to WASM, runs as pure Java bytecode (no native binary)
+# v3 for protobuf-java 3.25.x, v4 for protobuf-java 4.28.x
+protobuf4j-v3    = { module = "io.roastedroot:protobuf4j-v3", version.ref = "protobuf4j" }
+protobuf4j-v4    = { module = "io.roastedroot:protobuf4j-v4", version.ref = "protobuf4j" }
+
+# protobuf runtime: Java/Kotlin classes used by generated message code
+protobuf-java    = { module = "com.google.protobuf:protobuf-java", version.ref = "protobuf" }
+protobuf-kotlin  = { module = "com.google.protobuf:protobuf-kotlin", version.ref = "protobuf" }
+
+# gRPC runtime: needed by generated Java gRPC service stubs
+grpc-protobuf    = { module = "io.grpc:grpc-protobuf", version.ref = "grpc" }
+grpc-stub        = { module = "io.grpc:grpc-stub", version.ref = "grpc" }
+
+# gRPC Kotlin runtime: needed by generated Kotlin coroutine gRPC stubs
+grpc-kotlin-stub = { module = "io.grpc:grpc-kotlin-stub", version.ref = "grpc-kotlin" }
