@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="docs/banner.png" alt="Amper Protobuf Plugin" width="100%"/>
+</p>
+
 # Amper Protobuf Plugin
 
 A build plugin for [Amper](https://amper.org) that generates Java/Kotlin code from `.proto` files — no native `protoc` binary needed.

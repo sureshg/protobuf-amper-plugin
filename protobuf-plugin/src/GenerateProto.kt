@@ -11,6 +11,7 @@ import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.nio.file.Path
 import kotlin.io.path.*
+import io.grpc.kotlin.generator.GeneratorRunner
 
 import io.roastedroot.protobuf4j.v3.Protobuf as ProtobufV3
 import io.roastedroot.protobuf4j.v4.Protobuf as ProtobufV4
