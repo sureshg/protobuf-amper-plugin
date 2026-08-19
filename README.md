@@ -7,8 +7,7 @@
 A local build plugin for the [Kotlin Toolchain](https://kotlin-toolchain.org) that generates Java and Kotlin code from
 `.proto` files without a native `protoc` binary. It uses [protobuf4j](https://github.com/roastedroot/protobuf4j) (protoc
 compiled to WASM, run as JVM bytecode by [Endive](https://github.com/bytecodealliance/endive))
-and [grpc-kotlin](https://github.com/grpc/grpc-kotlin) for coroutine stubs. Everything runs on the JVM, so builds behave
-the same on macOS, Linux, and Windows.
+and [grpc-kotlin](https://github.com/grpc/grpc-kotlin) for coroutine stubs. Everything runs on the JVM.
 
 ## Quick start
 
