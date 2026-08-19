@@ -1,90 +1,53 @@
 <p align="center">
-  <img src="docs/banner.png" alt="Amper Protobuf Plugin" width="100%"/>
+  <img src="docs/banner.svg" alt="Protobuf Toolchain Plugin" width="100%"/>
 </p>
 
-# Amper Protobuf Plugin
+# 🧩 Protobuf Toolchain Plugin
 
-A build plugin for [Amper](https://amper.org) that generates Java/Kotlin code from `.proto` files — no native `protoc` binary needed.
+A local build plugin for the [Kotlin Toolchain](https://kotlin-toolchain.org) that generates Java and Kotlin code from `.proto` files, with no native `protoc` binary anywhere in sight.
 
-It uses [protobuf4j](https://github.com/roastedroot/protobuf4j) (protoc compiled to WASM, running as pure JVM bytecode via [Chicory](https://github.com/nicolarevelant/chicory)) and [grpc-kotlin](https://github.com/grpc/grpc-kotlin) for coroutine-based stubs. Everything runs on the JVM, so it works the same on macOS, Linux, and Windows without any platform-specific binaries.
-
-## How it works
-
-```
-.proto files
-     │
-     ▼
- protobuf4j  (protoc → WASM → JVM bytecode)
-     │
-     ├──▶ NativePlugin.JAVA         → Java message classes
-     ├──▶ NativePlugin.KOTLIN       → Kotlin DSL message wrappers
-     ├──▶ NativePlugin.GRPC_JAVA    → Java gRPC service stubs
-     │
-     └──▶ GeneratorRunner            → Kotlin gRPC coroutine stubs (pure JVM)
-           io.grpc:protoc-gen-grpc-kotlin
-```
-
-No `protoc` binary. No `protoc-gen-grpc-java` binary. Just the JVM.
+It uses [protobuf4j](https://github.com/roastedroot/protobuf4j) (protoc compiled to WASM, executed as JVM bytecode by [Endive](https://github.com/bytecodealliance/endive)) and [grpc-kotlin](https://github.com/grpc/grpc-kotlin) for coroutine stubs. Everything runs on the JVM, so builds behave identically on macOS, Linux, and Windows.
 
 ## Quick start
-
-### Project layout
-
-```
-my-project/
-├── protobuf-plugin/          # the plugin itself
-│   ├── module.yaml
-│   ├── plugin.yaml
-│   └── src/
-│       ├── Schema.kt
-│       └── GenerateProto.kt
-├── my-app/
-│   ├── module.yaml
-│   └── src/
-│       └── proto/
-│           └── hello.proto
-└── project.yaml
-```
 
 ### 1. Register the plugin (`project.yaml`)
 
 ```yaml
 modules:
+  - app
   - protobuf-plugin
-  - my-app
 
 plugins:
   - ./protobuf-plugin
 ```
 
-### 2. Configure your module (`my-app/module.yaml`)
+### 2. Enable it in your module (`app/module.yaml`)
 
 ```yaml
 product: jvm/app
 
-settings:
-  jvm:
-    mainClass: MainKt
-
 plugins:
   protobuf-plugin:
     enabled: true
-    plugin: GRPC_KOTLIN
+    target: GRPC_KOTLIN
+    version: V4
 
 dependencies:
-  - $libs.protobuf.java
-  - $libs.protobuf.kotlin
-  - $libs.grpc.protobuf
-  - $libs.grpc.stub
-  - $libs.grpc.kotlin.stub
+  - com.google.protobuf:protobuf-java:4.35.1
+  - com.google.protobuf:protobuf-kotlin:4.35.1
+  - io.grpc:grpc-protobuf:1.83.1
+  - io.grpc:grpc-stub:1.83.1
+  - io.grpc:grpc-kotlin-stub:1.5.0
 ```
 
-### 3. Drop `.proto` files in `src/proto/`
+### 3. Drop `.proto` files into `app/src/proto/`
 
 ```protobuf
 syntax = "proto3";
 
-option java_package = "com.example.grpc";
+package demo;
+
+option java_package = "demo";
 option java_multiple_files = true;
 
 service Greeter {
@@ -95,51 +58,59 @@ message HelloRequest { string name = 1; }
 message HelloReply   { string message = 1; }
 ```
 
-### 4. Build
+Subdirectories work: a file is addressed by its path relative to `src/proto`, which is exactly what you write in `import` statements.
+
+### 4. Build and run
 
 ```shell
-./amper build
+./kotlin build                                # generates + compiles
+./kotlin run -m app                           # runs the app
+./kotlin package -m app -f executable-jar     # self-contained jar
 ```
 
-Generated Java sources go to `java-sources`, Kotlin sources to `kotlin-sources` — both get picked up by the compiler automatically.
+Generated sources are registered with the compiler automatically: there is nothing to add to `src/`, and nothing generated is written into your source tree.
 
-## Plugin settings
+## Settings
 
-| Setting           | Values            | Default  | Description                         |
-|-------------------|-------------------|----------|-------------------------------------|
-| `protobufVersion` | `V3` / `V4`      | `V4`     | Which protobuf4j WASM module to use |
-| `plugin`          | see table below   | `KOTLIN` | What code to generate               |
+Both settings are optional.
 
-### Plugin modes
+### `target`
 
-Each mode includes the generators it depends on, so you only pick the highest level you need:
+`JAVA` · `KOTLIN` · `GRPC_JAVA` · `GRPC_KOTLIN` &nbsp;&nbsp;→&nbsp;&nbsp; default `KOTLIN`
 
-| Mode          | Generates                                                  |
-|---------------|------------------------------------------------------------|
-| `JAVA`        | Java message classes                                       |
-| `KOTLIN`      | above + Kotlin DSL wrappers                                |
-| `GRPC_JAVA`   | `JAVA` + Java gRPC service stubs                           |
-| `GRPC_KOTLIN` | everything — Java, Kotlin, gRPC Java stubs, gRPC Kotlin stubs |
+What the plugin generates. Java messages are always generated and every other generator builds on them, so pick the highest target you need:
 
-### Runtime dependencies
+- **`JAVA`** &nbsp;·&nbsp; Java message classes &nbsp;·&nbsp; needs `protobuf-java`
+- **`KOTLIN`** &nbsp;·&nbsp; the above plus Kotlin DSL builders &nbsp;·&nbsp; adds `protobuf-kotlin`
+- **`GRPC_JAVA`** &nbsp;·&nbsp; `JAVA` plus Java gRPC service stubs &nbsp;·&nbsp; adds `grpc-protobuf`, `grpc-stub`
+- **`GRPC_KOTLIN`** &nbsp;·&nbsp; everything, plus Kotlin coroutine gRPC stubs &nbsp;·&nbsp; adds `grpc-kotlin-stub`
 
-What you need in your module's `dependencies` depends on the mode:
+### `version`
 
-| Mode          | Dependencies                                                              |
-|---------------|---------------------------------------------------------------------------|
-| `JAVA`        | `protobuf-java`                                                           |
-| `KOTLIN`      | `protobuf-java`, `protobuf-kotlin`                                        |
-| `GRPC_JAVA`   | `protobuf-java`, `grpc-protobuf`, `grpc-stub`                             |
-| `GRPC_KOTLIN` | all of the above + `grpc-kotlin-stub`                                      |
+`V3` · `V4` &nbsp;&nbsp;→&nbsp;&nbsp; default `V4`
 
-If you're running an actual gRPC server or client, you'll also want a transport like `io.grpc:grpc-netty-shaded` or `io.grpc:grpc-okhttp`.
+The protobuf version.
 
-### Protobuf version
+## How it works
 
-| Value | protobuf4j artifact | Use when                          |
-|-------|---------------------|-----------------------------------|
-| `V3`  | `protobuf4j-v3`     | your app uses `protobuf-java` 3.x |
-| `V4`  | `protobuf4j-v4`     | your app uses `protobuf-java` 4.x |
+Every generator speaks the protoc plugin protocol (one `CodeGeneratorRequest` in, one `CodeGeneratorResponse` out), so the task is a straight line:
+
+```
+src/proto/**.proto
+     │  staged into an in-memory filesystem (the protoc sandbox)
+     ▼
+CodeGeneratorRequest   (descriptors + transitive imports)
+     │
+     ├──▶ protoc --java_out     → Java message classes      ─┐
+     ├──▶ protoc --kotlin_out   → Kotlin DSL builders        ├──▶ CodeGeneratorResponse
+     ├──▶ protoc grpc-java      → Java gRPC stubs            │      → written to the task
+     └──▶ grpc-kotlin generator → Kotlin coroutine stubs    ─┘        output directories
+```
+
+The order matters: the messages come first, and the DSL builders and stubs are generated on top of them.
+
+> [!NOTE]
+> `jvm/amper-plugin` and the `org.jetbrains.amper.plugins` package are the current names of the Kotlin Toolchain plugin API, which still ships under its former Amper coordinates.
 
 ## License
 

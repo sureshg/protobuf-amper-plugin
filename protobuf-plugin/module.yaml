@@ -1,11 +1,17 @@
 product: jvm/amper-plugin
 
+settings:
+  kotlin:
+    version: 2.4.20-RC
+    freeCompilerArgs:
+      - -Xcollection-literals
+      - -Xcontext-sensitive-resolution
+
 dependencies:
-  # protobuf4j — pure JVM protoc via WASM (v3 and v4)
   - $libs.protobuf4j.v3
   - $libs.protobuf4j.v4
-  # grpc-kotlin codegen — pure JVM, no native binary (jdk8 classifier not supported in version catalog)
-  - io.grpc:protoc-gen-grpc-kotlin:1.5.0:jdk8
+  - io.grpc:protoc-gen-grpc-kotlin:1.5.0:jdk8 # grpc-kotlin codegen, pure JVM, no native binary
+  - $libs.zerofs
 
 pluginInfo:
-  settingsClass: Schema
+  settingsClass: Settings

@@ -1,6 +1,6 @@
 modules:
+  - demo
   - protobuf-plugin
-  - example-app
 
 plugins:
   - ./protobuf-plugin
