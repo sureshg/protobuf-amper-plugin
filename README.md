@@ -5,10 +5,10 @@
 # Protobuf Toolchain Plugin
 
 A local build plugin for the [Kotlin Toolchain](https://kotlin-toolchain.org) that generates Java and Kotlin code from
-`.proto` files, with no native `protoc` binary anywhere in sight. It
-uses [protobuf4j](https://github.com/roastedroot/protobuf4j) (protoc compiled to WASM, executed as JVM bytecode
-by [Endive](https://github.com/bytecodealliance/endive)) and [grpc-kotlin](https://github.com/grpc/grpc-kotlin) for
-coroutine stubs. Everything runs on the JVM, so builds behave identically on macOS, Linux, and Windows.
+`.proto` files without a native `protoc` binary. It uses [protobuf4j](https://github.com/roastedroot/protobuf4j) (protoc
+compiled to WASM, run as JVM bytecode by [Endive](https://github.com/bytecodealliance/endive))
+and [grpc-kotlin](https://github.com/grpc/grpc-kotlin) for coroutine stubs. Everything runs on the JVM, so builds behave
+the same on macOS, Linux, and Windows.
 
 ## Quick start
 
@@ -79,26 +79,26 @@ Both settings are optional.
 
 ### `target`
 
-`JAVA` · `KOTLIN` · `GRPC_JAVA` · `GRPC_KOTLIN` &nbsp;&nbsp;→&nbsp;&nbsp; default `KOTLIN`
+`JAVA`, `KOTLIN`, `GRPC_JAVA`, or `GRPC_KOTLIN` (default `KOTLIN`)
 
 What the plugin generates. Java messages are always generated and every other generator builds on them, so pick the
-highest target you need:
+highest target you need. The plugin doesn't add these dependencies for you, so declare them yourself as shown above:
 
-- **`JAVA`** &nbsp;·&nbsp; Java message classes &nbsp;·&nbsp; needs `protobuf-java`
-- **`KOTLIN`** &nbsp;·&nbsp; the above plus Kotlin DSL builders &nbsp;·&nbsp; adds `protobuf-kotlin`
-- **`GRPC_JAVA`** &nbsp;·&nbsp; `JAVA` plus Java gRPC service stubs &nbsp;·&nbsp; adds `grpc-protobuf`, `grpc-stub`
-- **`GRPC_KOTLIN`** &nbsp;·&nbsp; everything, plus Kotlin coroutine gRPC stubs &nbsp;·&nbsp; adds `grpc-kotlin-stub`
+- `JAVA`: Java message classes, requires `protobuf-java`
+- `KOTLIN`: the above plus Kotlin DSL builders, requires `protobuf-kotlin`
+- `GRPC_JAVA`: `JAVA` plus Java gRPC service stubs, requires `grpc-protobuf` and `grpc-stub`
+- `GRPC_KOTLIN`: everything, plus Kotlin coroutine gRPC stubs, requires `grpc-kotlin-stub`
 
 ### `version`
 
-`V3` · `V4` &nbsp;&nbsp;→&nbsp;&nbsp; default `V4`
+`V3` or `V4` (default `V4`)
 
 The protobuf version.
 
 ## How it works
 
-Every generator speaks the protoc plugin protocol (one `CodeGeneratorRequest` in, one `CodeGeneratorResponse` out), so
-the task is a straight line:
+Every generator implements the protoc plugin protocol, turning a `CodeGeneratorRequest` into a
+`CodeGeneratorResponse`. The pipeline runs sequentially, running only the generators your target requires:
 
 ```
 src/proto/**.proto
