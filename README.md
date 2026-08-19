@@ -2,11 +2,13 @@
   <img src="docs/banner.svg" alt="Protobuf Toolchain Plugin" width="100%"/>
 </p>
 
-# 🧩 Protobuf Toolchain Plugin
+# Protobuf Toolchain Plugin
 
-A local build plugin for the [Kotlin Toolchain](https://kotlin-toolchain.org) that generates Java and Kotlin code from `.proto` files, with no native `protoc` binary anywhere in sight.
-
-It uses [protobuf4j](https://github.com/roastedroot/protobuf4j) (protoc compiled to WASM, executed as JVM bytecode by [Endive](https://github.com/bytecodealliance/endive)) and [grpc-kotlin](https://github.com/grpc/grpc-kotlin) for coroutine stubs. Everything runs on the JVM, so builds behave identically on macOS, Linux, and Windows.
+A local build plugin for the [Kotlin Toolchain](https://kotlin-toolchain.org) that generates Java and Kotlin code from
+`.proto` files, with no native `protoc` binary anywhere in sight. It
+uses [protobuf4j](https://github.com/roastedroot/protobuf4j) (protoc compiled to WASM, executed as JVM bytecode
+by [Endive](https://github.com/bytecodealliance/endive)) and [grpc-kotlin](https://github.com/grpc/grpc-kotlin) for
+coroutine stubs. Everything runs on the JVM, so builds behave identically on macOS, Linux, and Windows.
 
 ## Quick start
 
@@ -54,21 +56,22 @@ service Greeter {
   rpc SayHello (HelloRequest) returns (HelloReply);
 }
 
-message HelloRequest { string name = 1; }
-message HelloReply   { string message = 1; }
+message HelloRequest {string name = 1;}
+message HelloReply   {string message = 1;}
 ```
 
-Subdirectories work: a file is addressed by its path relative to `src/proto`, which is exactly what you write in `import` statements.
+Subdirectories work: a file is addressed by its path relative to `src/proto`, which is exactly what you write in
+`import` statements.
 
 ### 4. Build and run
 
 ```shell
-./kotlin build                                # generates + compiles
+./kotlin build                                # generates + build
 ./kotlin run -m app                           # runs the app
-./kotlin package -m app -f executable-jar     # self-contained jar
 ```
 
-Generated sources are registered with the compiler automatically: there is nothing to add to `src/`, and nothing generated is written into your source tree.
+Generated sources are registered with the compiler automatically: there is nothing to add to `src/`, and nothing
+generated is written into your source tree.
 
 ## Settings
 
@@ -78,7 +81,8 @@ Both settings are optional.
 
 `JAVA` · `KOTLIN` · `GRPC_JAVA` · `GRPC_KOTLIN` &nbsp;&nbsp;→&nbsp;&nbsp; default `KOTLIN`
 
-What the plugin generates. Java messages are always generated and every other generator builds on them, so pick the highest target you need:
+What the plugin generates. Java messages are always generated and every other generator builds on them, so pick the
+highest target you need:
 
 - **`JAVA`** &nbsp;·&nbsp; Java message classes &nbsp;·&nbsp; needs `protobuf-java`
 - **`KOTLIN`** &nbsp;·&nbsp; the above plus Kotlin DSL builders &nbsp;·&nbsp; adds `protobuf-kotlin`
@@ -93,7 +97,8 @@ The protobuf version.
 
 ## How it works
 
-Every generator speaks the protoc plugin protocol (one `CodeGeneratorRequest` in, one `CodeGeneratorResponse` out), so the task is a straight line:
+Every generator speaks the protoc plugin protocol (one `CodeGeneratorRequest` in, one `CodeGeneratorResponse` out), so
+the task is a straight line:
 
 ```
 src/proto/**.proto
@@ -108,9 +113,6 @@ CodeGeneratorRequest   (descriptors + transitive imports)
 ```
 
 The order matters: the messages come first, and the DSL builders and stubs are generated on top of them.
-
-> [!NOTE]
-> `jvm/amper-plugin` and the `org.jetbrains.amper.plugins` package are the current names of the Kotlin Toolchain plugin API, which still ships under its former Amper coordinates.
 
 ## License
 

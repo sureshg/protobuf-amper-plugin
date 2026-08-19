@@ -13,10 +13,7 @@ import java.nio.file.Path
 import kotlin.io.path.*
 import org.jetbrains.amper.plugins.*
 
-/**
- * Compiles the module's `.proto` sources into Java and Kotlin code. protoc runs as WebAssembly
- * (protobuf4j), grpc-kotlin on the JVM, nothing native.
- */
+/** Compiles the module's `.proto` sources into Java and Kotlin code */
 @TaskAction
 @OptIn(ExperimentalPathApi::class, ExperimentalContextParameters::class)
 fun protoc(
@@ -82,7 +79,7 @@ private fun runProtoc(generator: NativePlugin, into: Path) {
   }.writeTo(into)
 }
 
-/** grpc-kotlin is a plain JVM generator, driven exactly like a protoc plugin process. */
+/** grpc-kotlin is a plain JVM generator. */
 context(request: CodeGeneratorRequest)
 private fun runGrpcKotlin(into: Path) {
   println("Running grpc-kotlin")
